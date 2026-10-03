@@ -7,9 +7,9 @@
     $ErrorActionPreference = 'Stop'
     $ProgressPreference    = 'SilentlyContinue'
 
-    $Version = '2026.10.03.1430'
-    $ZipUrl  = 'https://raw.githubusercontent.com/BOSDEKOUAU/mp3-setting/main/mp3-setting-2026.10.03.1430.zip'
-    $ZipHash = '227E8837B7DB9F1CDE02FED261560DE9737954218A4233BE57705C4F532038A1'
+    $Version = '2026.10.03.1445'
+    $ZipUrl  = 'https://raw.githubusercontent.com/BOSDEKOUAU/mp3-setting/main/mp3-setting-2026.10.03.1445.zip'
+    $ZipHash = '3F3D793E88906FCE18654390D497AE30689698BECAF2CADE93564399A62D4E2F'
     $SelfUrl = 'https://raw.githubusercontent.com/BOSDEKOUAU/mp3-setting/main/install.ps1'
 
     $Base = Join-Path $env:ProgramData 'SettingMP3V1'
@@ -39,7 +39,10 @@
     try {
         # --- 2) app folder: only Administrators/SYSTEM can modify (blocks tampering by other users) ---
         New-Item -ItemType Directory -Force -Path $Root | Out-Null
-        & icacls.exe $Base /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-545:(OI)(CI)RX' /T /C /Q | Out-Null
+        # set the rule on the top folder only, then make every existing file/folder inherit it
+        # (applying (OI)(CI) rules directly to files with /T leaves them unreadable)
+        & icacls.exe $Base /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-545:(OI)(CI)RX' /C /Q | Out-Null
+        & icacls.exe "$Base\*" /reset /T /C /Q | Out-Null
 
         # --- 3) download + verify (SHA-256) only when this version is not installed yet ---
         if (-not (Test-Path $Main)) {
